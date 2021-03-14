@@ -1,4 +1,4 @@
 # Kabe
- Programmeerimis tunni jaoiks loodud kabe koos Minimax algoritmiga (alpha beta pruning)
+ Programmeerimis tunni jaoks loodud kabe koos Minimax algoritmiga (alpha beta pruning)
 
  Ei vasta päris reegiltele / poolik
