@@ -1,6 +1,5 @@
 from copy import deepcopy
 from nupp import Mehike, Kuningas
-import math
 
 
 class Kabe(object):
@@ -37,7 +36,9 @@ class Kabe(object):
         self.mangKaib = True
         self.saabVeel = False
         self.veel = False
-        self.max_sugavus = 2
+        self.max_sugavus = 10
+        self.kun_kaal = 1.5
+        self.meh_kaal = 1.0
 
     def __repr__(self):
         return "Kabe(laud=laud, mangKaib='{}', saabVeel={}, veel={}, max_sugavus={})".format(
@@ -65,14 +66,6 @@ class Kabe(object):
             if nupp.getNimi() == nimi:
                 return nupp.asukoht
 
-    def teisendaKoord(self, x, y, aj_seis):
-        nupp = self.leiaNupp(x, y).getNimi()
-        nupp = aj_seis.leiaNupp(nimi=nupp)
-        if nupp == None:
-            print("Sellist nuppu ei ole!")
-            return
-        return nupp.asukoht
-
     def kustuta(self, x=None, y=None, nupp=None, laud=None):
         if nupp == None:
             nupp = self.leiaNupp(x, y)
@@ -96,44 +89,6 @@ class Kabe(object):
         for nupp in laud:
             n[nupp.asukoht] = nupp.varv
         return n
-
-    def loo_maatriks(self):
-        n = self.loo_n()
-        m = [["", "", "", "", "", "", "", ""] for i in range(8)]
-
-        for i in range(8):
-            for j in range(8):
-                if (i, j) in n:
-                    m[i][j] = self.leiaNupp(i, j)
-        return m
-
-    def keera_paripaeva(self):
-        jar = [[] for i in range(8)]
-        m = self.loo_maatriks()
-
-        for j in reversed(range(8)):
-            for i in range(8 - 1, -1, -1):
-                jar[i].append(m[j][i])
-        return jar
-
-    def keera_vastupaeva(self):
-        jar = [[] for i in range(8)]
-        m = self.loo_maatriks()
-
-        for j in range(8):
-            for i in reversed(range(8 - 1, -1, -1)):
-                jar[i].append(m[j][7 - i])
-        return jar
-
-    @staticmethod
-    def muuda_asukohad(fun):
-        m = fun()
-
-        for x in range(len(m)):
-            for y in range(len(m[x])):
-                if m[x][y] != "":
-                    m[x][y].asukoht = (x, y)
-        return m
 
     def mang_kaib(self):
         varvid = set()
@@ -214,13 +169,14 @@ class Kabe(object):
                 nupp.liigu(x_lopp, y_lopp, self)
 
             else:
-                self = self.Minimax2(1, True)[1]
+                self = self.Minimax(1, True)[1]
 
             i += 1
             i %= 2
 
         self.print()
         print("MÄNG LÄBI!")
+        input('Lõpetamiseks vajutage klaviatuuri')
 
     def valesti1(self, son):
         print(son)
@@ -425,9 +381,9 @@ class Kabe(object):
             nupp.asukoht = (x, y)
 
     def hinda(self):
-        return self.arvutaSkoor(1.2, 1)
+        return self.arvutaSkoor(self.kun_kaal, self.meh_kaal)
 
-    def Minimax2(
+    def Minimax(
         self, sugavus, max_player=True, kabe=None, alfa=float("-inf"), beta=float("inf")
     ):
         if kabe == None:
@@ -440,7 +396,7 @@ class Kabe(object):
             maxSkoor = float("-inf")
             parim = None
             for kabe in kabe.koik_voimalikud_sammud("v", kabe):
-                vaartus = self.Minimax2(sugavus + 1, False, kabe)[0]
+                vaartus = self.Minimax(sugavus + 1, False, kabe)[0]
                 maxSkoor = max(maxSkoor, vaartus)
                 alfa = max(alfa, maxSkoor)
                 if alfa >= beta:
@@ -453,7 +409,7 @@ class Kabe(object):
             minSkoor = float("inf")
             parim = None
             for kabe in kabe.koik_voimalikud_sammud("m", kabe):
-                vaartus = self.Minimax2(sugavus + 1, False, kabe)[0]
+                vaartus = self.Minimax(sugavus + 1, False, kabe)[0]
                 minSkoor = min(minSkoor, vaartus)
                 beta = min(beta, minSkoor)
                 if beta >= alfa:

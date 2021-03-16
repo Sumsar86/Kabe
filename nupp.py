@@ -1,6 +1,3 @@
-from copy import deepcopy
-
-
 class Nupp(object):
     def __init__(self, num=None, varv=None, asukoht=None):
         self.num = str(num)
@@ -26,6 +23,8 @@ class Nupp(object):
         )
 
     def hindamine(self, y1, y2):
+        if isinstance(self, Kuningas):
+            return (y1 + 1 == y2 or y1 - 1 == y2)
         if self.varv == "v":
             return y1 - 1 == y2
         else:
@@ -42,6 +41,17 @@ class Nupp(object):
             return (x - 1, y + 1)
         else:
             return (x + 1, y + 1)
+
+    def leia_vastaseid(self, lopp, n, v, s):
+        if lopp in n:
+            if self.varv == "m" and n[lopp] == 'v':
+                v.add(lopp)
+            elif self.varv == "v" and n[lopp] == 'm':
+                v.add(lopp)
+            elif self.varv == "m" and n[lopp] == 'm':
+                s.add(lopp)
+            elif self.varv == "v" and n[lopp] == 'v':
+                s.add(lopp)
 
     def kopeeri(self, teine_nupp):
         self.num = teine_nupp.num
@@ -60,14 +70,14 @@ class Nupp(object):
 
         x -= 1
         y -= 1
-
+        
         if self.kontrolli_liikumist(x, y, kabe):
             saab, vaenlased, sobrad, h_lopp = self.kontrolli_rundamist(x, y, kabe)
 
             if saab:
                 self.runda(x, y, h_lopp, kabe)
             elif len(vaenlased) > 0:
-                n = kabe.loo_n(kabe.laud)
+                n = kabe.loo_n()
                 for v in vaenlased:
                     h_lopp = (
                         v[0] + (v[0] - self.asukoht[0]),
@@ -75,7 +85,10 @@ class Nupp(object):
                     )
                     if h_lopp not in n and self.onLaual(h_lopp):
                         return self.uusSisend(kabe, "Ei saa. Peate ründama.")
-                self.asukoht = (x, y)
+                if (x, y) not in n:
+                    self.asukoht = (x, y)
+                else:
+                    return self.uusSisend(kabe)
             else:
                 if len(sobrad) > 0:
                     if (x, y) in sobrad:
@@ -86,10 +99,48 @@ class Nupp(object):
                     self.asukoht = (x, y)
         else:
             return self.uusSisend(kabe)
+    
+    def kontrolli_liikumist(self, x_lopp, y_lopp, kabe):
+        x, y = self.asukoht[0], self.asukoht[1]
+        n = kabe.loo_n()
+
+        if (
+            (y - 1 == y_lopp or y + 1 == y_lopp)
+            and self.hindamine(x, x_lopp)
+            and self.onLaual(x, y, x_lopp, y_lopp)
+        ):
+            if (x_lopp, y_lopp) in n:
+                if self.varv != n[(x_lopp, y_lopp)]:
+                    return True
+                return False
+            return True
+        else:
+            return False
 
     def runda(self, x, y, huppe_lopp, kabe):
         kabe.kustuta(x, y)
         self.asukoht = huppe_lopp
+    
+    def kontrolli_rundamist(self, x_lopp, y_lopp, kabe):
+        lopp = (x_lopp, y_lopp)
+        x, y = self.asukoht[0], self.asukoht[1]
+
+        huppe_lopp = (x_lopp + (x_lopp - x), y_lopp + (y_lopp - y))
+        n = kabe.loo_n()
+        
+        vaenlased, sobrad = self.kontrolli_vastaseid(n)
+        
+        if huppe_lopp not in n and self.onLaual(huppe_lopp):
+            if (
+                len(vaenlased) > 0
+                and lopp in vaenlased
+                and self.varv != kabe.leiaNupp(x_lopp, y_lopp).varv
+            ):
+                return True, vaenlased, sobrad, huppe_lopp
+            else:
+                return False, vaenlased, sobrad, huppe_lopp
+        else:
+            return False, vaenlased, sobrad, huppe_lopp
 
     @staticmethod
     def onLaual(*args):
@@ -113,68 +164,20 @@ class Mehike(Nupp):
             self.num, self.varv, self.asukoht
         )
 
-    def kontrolli_liikumist(self, x_lopp, y_lopp, kabe):
+    def kontrolli_vastaseid(self, n):
         x, y = self.asukoht[0], self.asukoht[1]
-        n = kabe.loo_n()
-
-        if (
-            (y - 1 == y_lopp or y + 1 == y_lopp)
-            and self.hindamine(x, x_lopp)
-            and self.onLaual(x, y, x_lopp, y_lopp)
-        ):
-            if (x_lopp, y_lopp) in n:
-                if self.varv != n[(x_lopp, y_lopp)]:
-                    return True
-                return False
-            return True
-        else:
-            return False
-
-    def kontrolli_rundamist(self, x_lopp, y_lopp, kabe, laud=None):
-        lopp = (x_lopp, y_lopp)
-        x, y = self.asukoht[0], self.asukoht[1]
-
-        huppe_lopp = (x_lopp + (x_lopp - x), y_lopp + (y_lopp - y))
-        n = kabe.loo_n(laud)
-
-        vaenlased = self.kontrolli_vastaseid(n, "m", "v")
-        sobrad = self.kontrolli_vastaseid(n, "v", "m")
-
-        if huppe_lopp not in n and self.onLaual(huppe_lopp):
-            if (
-                len(vaenlased) > 0
-                and lopp in vaenlased
-                and self.varv != kabe.leiaNupp(x_lopp, y_lopp).varv
-            ):
-                return True, vaenlased, sobrad, huppe_lopp
-            else:
-                return False, vaenlased, sobrad, huppe_lopp
-        else:
-            return False, vaenlased, sobrad, huppe_lopp
-
-    def kontrolli_vastaseid(self, n, var1, var2):
-        jar = []
-        x, y = self.asukoht[0], self.asukoht[1]
+        v, s = set(), set()
 
         ajutineM = self.kMiinus(x, y)
         ajutineP = self.kPluss(x, y)
 
         if ajutineM in n:
-            if self.varv == "m" and n[ajutineM] != var1:
-                jar.append(ajutineM)
-            elif self.varv == "v" and n[ajutineM] != var2:
-                jar.append(ajutineM)
+            self.leia_vastaseid(ajutineM, n, v, s)
 
         if ajutineP in n:
-            if self.varv == "m" and n[ajutineP] != var1:
-                jar.append(ajutineP)
-            elif self.varv == "v" and n[ajutineP] != var2:
-                jar.append(ajutineP)
+            self.leia_vastaseid(ajutineP, n, v, s)
 
-        if len(jar) > 0:
-            return jar
-        else:
-            return []
+        return v, s
 
 
 class Kuningas(Nupp):
@@ -189,56 +192,16 @@ class Kuningas(Nupp):
     def getNimi(self):
         return self.num + self.varv.upper()
 
-    def kontrolli_liikumist(self, x_lopp, y_lopp, kabe):
-        x, y = self.asukoht[0], self.asukoht[1]
-        n = kabe.loo_n()
-
-        if (
-            (y - 1 == y_lopp or y + 1 == y_lopp)
-            and (x - 1 == x_lopp or x + 1 == x_lopp)
-            and self.onLaual(x, y, x_lopp, y_lopp)
-        ):
-            if (x_lopp, y_lopp) in n:
-                if self.varv != n[(x_lopp, y_lopp)]:
-                    return True
-                return False
-            return True
-        else:
-            return False
-
-    def kontrolli_rundamist(self, x_lopp, y_lopp, kabe):
-        lopp = (x_lopp, y_lopp)
-        x, y = self.asukoht[0], self.asukoht[1]
-
-        huppe_lopp = (x_lopp + (x_lopp - x), y_lopp + (y_lopp - y))
-        n = kabe.loo_n()
-
-        vaenlased = self.kontrolli_vastaseid(n)
-        sobrad = self.kontrolli_vastaseid(n)
-
-        if huppe_lopp not in n and self.onLaual(huppe_lopp):
-            if (
-                len(vaenlased) > 0
-                and lopp in vaenlased
-                and self.varv != kabe.leiaNupp(x_lopp, y_lopp).varv
-            ):
-                return True, vaenlased, sobrad, huppe_lopp
-            else:
-                return False, vaenlased, sobrad, huppe_lopp
-        else:
-            return False, vaenlased, sobrad, huppe_lopp
-
     def kontrolli_vastaseid(self, n):
         x, y = self.asukoht[0], self.asukoht[1]
-        jar = []
+        v, s = set(), set()
 
         naabrid = [(x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)]
 
         for naaber in naabrid:
             if naaber in n and self.varv != n[naaber]:
-                jar.append(naaber)
+                v.add(naaber)
+            elif naaber in n and self.varv == n[naaber]:
+                s.add(naaber)
 
-        if len(jar) > 0:
-            return jar
-        else:
-            return []
+        return v, s
