@@ -174,7 +174,10 @@ class Kabe(object):
             i += 1
             i %= 2
 
-        self.print()
+        try:
+            self.print()
+        except AttributeError:
+            pass
         print("MÄNG LÄBI!")
         input('Lõpetamiseks vajutage klaviatuuri')
 
