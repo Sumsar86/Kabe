@@ -1,4 +1,3 @@
-from nupp import Mehike
 import kabe
 import sys
 
