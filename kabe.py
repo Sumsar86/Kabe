@@ -18,19 +18,19 @@ class Kabe(object):
                 Mehike(8, "m", (1, 6)),
                 Mehike(9, "m", (2, 1)),
                 Mehike(10, "m", (2, 3)),
-                Mehike(11, "m", (2, 5)),
+                Mehike(11, "m", (2 + 1, 5 - 1)),
                 Mehike(12, "m", (2, 7)),
                 Mehike(1, "v", (5, 0)),
-                Mehike(2, "v", (5, 2)),
-                Kuningas(3, "v", (5, 4)),
-                Mehike(4, "v", (5, 6)),
+                # Mehike(2, "v", (5, 2)),
+                Mehike(3, "v", (5, 4)),
+                Mehike(4, "v", (5 - 1, 6 - 1)),
                 Mehike(5, "v", (6, 1)),
                 Mehike(6, "v", (6, 3)),
                 Mehike(7, "v", (6, 5)),
                 Mehike(8, "v", (6, 7)),
                 Mehike(9, "v", (7, 0)),
                 Mehike(10, "v", (7, 2)),
-                Mehike(11, "v", (7, 4)),
+                # Mehike(11, "v", (7, 4)),
                 Mehike(12, "v", (7, 6)),
             ]
         self.mangKaib = True
@@ -128,26 +128,29 @@ class Kabe(object):
 
         varvid = {"m": ["must", "musta"], "v": ["valge", "valge"]}
         i = 0
+        nupp = None
 
         while self.mangKaib:
-            for nupp in self.laud:
-                self.muundaNupp(nupp)
-
             if not self.mang_kaib():
                 break
 
+            for n in self.laud:
+                self.muundaNupp(n)
+
+            self.print()
+
+            if self.saabVeel:
+                print("Kas soovite veel ühe hüppe teha?")
+                sis = input("Jah / Ei: ").strip(" ").lower()
+                if sis == "jah":
+                    i += 1
+                    i %= 2
+                    self.veel = True
+                else:
+                    self.saabVeel = False
+
             if i == 0:
-                self.print()
-
-                if self.saabVeel:
-                    print("Kas soovite veel ühe hüppe teha?")
-                    sis = input("Jah / Ei: ").strip(" ").lower()
-                    if sis == "jah":
-                        i += 1
-                        self.veel = True
-
-                    else:
-                        self.saabVeel = False
+                # self.print()
 
                 mangija_varv = list(varvid.keys())[i][0]
 
@@ -169,6 +172,7 @@ class Kabe(object):
                 nupp.liigu(x_lopp, y_lopp, self)
 
             else:
+                # print(f"\n{varvid[mangija_varv][1].capitalize()} nupu kord.")
                 self = self.Minimax(1, True)[1]
 
             i += 1
@@ -179,7 +183,7 @@ class Kabe(object):
         except AttributeError:
             pass
         print("MÄNG LÄBI!")
-        input('Lõpetamiseks vajutage klaviatuuri')
+        input("Lõpetamiseks vajutage klaviatuuri")
 
     def valesti1(self, son):
         print(son)

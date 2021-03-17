@@ -76,6 +76,7 @@ class Nupp(object):
 
             if saab:
                 self.runda(x, y, h_lopp, kabe)
+                kabe.saabVeel, kabe.veel = self.kontrolli_uut_runnakut(kabe)
             elif len(vaenlased) > 0:
                 n = kabe.loo_n()
                 for v in vaenlased:
@@ -178,6 +179,20 @@ class Mehike(Nupp):
             self.leia_vastaseid(ajutineP, n, v, s)
 
         return v, s
+    
+    def kontrolli_uut_runnakut(self, kabe):
+        x, y = self.asukoht[0], self.asukoht[1]
+        ajutineM = self.kMiinus(x, y)
+        ajutineP = self.kPluss(x, y)
+
+        
+        if self.kontrolli_liikumist(ajutineM[0], ajutineM[1], kabe):
+            if self.kontrolli_rundamist(ajutineM[0], ajutineM[1], kabe)[0]:
+                return True, True
+        elif self.kontrolli_liikumist(ajutineP[0], ajutineP[1], kabe):
+            if self.kontrolli_rundamist(ajutineP[0], ajutineP[1], kabe)[0]:
+                return True, True
+        return False, False
 
 
 class Kuningas(Nupp):
@@ -205,3 +220,12 @@ class Kuningas(Nupp):
                 s.add(naaber)
 
         return v, s
+
+    def kontrolli_uut_runnakut(self, kabe):
+        x, y = self.asukoht[0], self.asukoht[1]
+        for i in range(-1, 2, 2):
+            for j in range(-1, 2, 2):
+                if self.kontrolli_liikumist(x + i, y + j, kabe):
+                    if self.kontrolli_rundamist(x + i, y + j, kabe)[0]:
+                        return True, True
+        return False, False
