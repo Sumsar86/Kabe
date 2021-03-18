@@ -1,4 +1,3 @@
-from nupp import Kuningas, Mehike
 import kabe
 import sys
 
@@ -10,4 +9,3 @@ mäng = kabe.Kabe()
 mäng.max_sugavus = 10
 
 mäng.alusta()
-del mäng

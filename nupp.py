@@ -24,33 +24,33 @@ class Nupp(object):
 
     def hindamine(self, y1, y2):
         if isinstance(self, Kuningas):
-            return (y1 + 1 == y2 or y1 - 1 == y2)
-        if self.varv == "v":
+            return y1 + 1 == y2 or y1 - 1 == y2
+        if self.varv == "m":
             return y1 - 1 == y2
         else:
             return y1 + 1 == y2
 
     def kMiinus(self, x, y):
-        if self.varv == "v":
+        if self.varv == "m":
             return (x - 1, y - 1)
         else:
             return (x + 1, y - 1)
 
     def kPluss(self, x, y):
-        if self.varv == "v":
+        if self.varv == "m":
             return (x - 1, y + 1)
         else:
             return (x + 1, y + 1)
 
     def leia_vastaseid(self, lopp, n, v, s):
         if lopp in n:
-            if self.varv == "m" and n[lopp] == 'v':
+            if self.varv == "v" and n[lopp] == "m":
                 v.add(lopp)
-            elif self.varv == "v" and n[lopp] == 'm':
+            elif self.varv == "m" and n[lopp] == "v":
                 v.add(lopp)
-            elif self.varv == "m" and n[lopp] == 'm':
+            elif self.varv == "v" and n[lopp] == "v":
                 s.add(lopp)
-            elif self.varv == "v" and n[lopp] == 'v':
+            elif self.varv == "m" and n[lopp] == "m":
                 s.add(lopp)
 
     def kopeeri(self, teine_nupp):
@@ -70,7 +70,7 @@ class Nupp(object):
 
         x -= 1
         y -= 1
-        
+
         if self.kontrolli_liikumist(x, y, kabe):
             saab, vaenlased, sobrad, h_lopp = self.kontrolli_rundamist(x, y, kabe)
 
@@ -100,7 +100,7 @@ class Nupp(object):
                     self.asukoht = (x, y)
         else:
             return self.uusSisend(kabe)
-    
+
     def kontrolli_liikumist(self, x_lopp, y_lopp, kabe):
         x, y = self.asukoht[0], self.asukoht[1]
         n = kabe.loo_n()
@@ -121,16 +121,16 @@ class Nupp(object):
     def runda(self, x, y, huppe_lopp, kabe):
         kabe.kustuta(x, y)
         self.asukoht = huppe_lopp
-    
+
     def kontrolli_rundamist(self, x_lopp, y_lopp, kabe):
         lopp = (x_lopp, y_lopp)
         x, y = self.asukoht[0], self.asukoht[1]
 
         huppe_lopp = (x_lopp + (x_lopp - x), y_lopp + (y_lopp - y))
         n = kabe.loo_n()
-        
+
         vaenlased, sobrad = self.kontrolli_vastaseid(n)
-        
+
         if huppe_lopp not in n and self.onLaual(huppe_lopp):
             if (
                 len(vaenlased) > 0
@@ -179,19 +179,32 @@ class Mehike(Nupp):
             self.leia_vastaseid(ajutineP, n, v, s)
 
         return v, s
-    
+
     def kontrolli_uut_runnakut(self, kabe):
         x, y = self.asukoht[0], self.asukoht[1]
         ajutineM = self.kMiinus(x, y)
         ajutineP = self.kPluss(x, y)
-
-        
         if self.kontrolli_liikumist(ajutineM[0], ajutineM[1], kabe):
             if self.kontrolli_rundamist(ajutineM[0], ajutineM[1], kabe)[0]:
                 return True, True
-        elif self.kontrolli_liikumist(ajutineP[0], ajutineP[1], kabe):
+        if self.kontrolli_liikumist(ajutineP[0], ajutineP[1], kabe):
             if self.kontrolli_rundamist(ajutineP[0], ajutineP[1], kabe)[0]:
                 return True, True
+        
+        aj = Kuningas()
+        aj.kopeeri(self)
+
+        for i in range(-1, 2, 2):
+            for j in range(-1, 2, 2):
+                if self.varv == "m" and self.asukoht[0] == 0:
+                    x, y = self.asukoht[0] + i, self.asukoht[1] + j
+                    if aj.kontrolli_liikumist(x, y, kabe) and aj.kontrolli_uut_runnakut(kabe):
+                        return True, True
+                if self.varv == "v" and self.asukoht[0] == 7:
+                    x, y = self.asukoht[0] + i, self.asukoht[1] + j
+                    if aj.kontrolli_liikumist(x, y, kabe) and aj.kontrolli_uut_runnakut(kabe):
+                        return True, True
+
         return False, False
 
 
