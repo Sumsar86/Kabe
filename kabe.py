@@ -1,5 +1,6 @@
 from copy import deepcopy
 from nupp import Mehike, Kuningas
+from random import randint
 
 
 class Kabe(object):
@@ -8,30 +9,30 @@ class Kabe(object):
             self.laud = laud
         else:
             self.laud = [
-                Mehike(1, "m", (0, 1)),
-                Mehike(2, "m", (0, 3)),
-                Mehike(3, "m", (0, 5)),
-                Mehike(4, "m", (0, 7)),
-                Mehike(5, "m", (1, 0)),
-                Mehike(6, "m", (1, 2)),
-                Mehike(7, "m", (1, 4)),
-                Mehike(8, "m", (1, 6)),
-                Mehike(9, "m", (2, 1)),
-                Mehike(10, "m", (2, 3)),
-                Mehike(11, "m", (2, 5)),
-                Mehike(12, "m", (2, 7)),
-                Mehike(1, "v", (5, 0)),
-                Mehike(2, "v", (5, 2)),
-                Kuningas(3, "v", (5, 4)),
-                Mehike(4, "v", (5, 6)),
-                Mehike(5, "v", (6, 1)),
-                Mehike(6, "v", (6, 3)),
-                Mehike(7, "v", (6, 5)),
-                Mehike(8, "v", (6, 7)),
-                Mehike(9, "v", (7, 0)),
-                Mehike(10, "v", (7, 2)),
-                Mehike(11, "v", (7, 4)),
-                Mehike(12, "v", (7, 6)),
+                Mehike(1, "v", (0, 1)),
+                Mehike(2, "v", (0, 3)),
+                Mehike(3, "v", (0, 5)),
+                Mehike(4, "v", (0, 7)),
+                Mehike(5, "v", (1, 0)),
+                Mehike(6, "v", (1, 2)),
+                Mehike(7, "v", (1, 4)),
+                Mehike(8, "v", (1, 6)),
+                Mehike(9, "v", (2, 1)),
+                Mehike(10, "v", (2, 3)),
+                Mehike(11, "v", (2, 5)),
+                Mehike(12, "v", (2, 7)),
+                Mehike(1, "m", (5, 0)),
+                Mehike(2, "m", (5, 2)),
+                Mehike(3, "m", (5, 4)),
+                Mehike(4, "m", (5, 6)),
+                Mehike(5, "m", (6, 1)),
+                Mehike(6, "m", (6, 3)),
+                Mehike(7, "m", (6, 5)),
+                Mehike(8, "m", (6, 7)),
+                Mehike(9, "m", (7, 0)),
+                Mehike(10, "m", (7, 2)),
+                Mehike(11, "m", (7, 4)),
+                Mehike(12, "m", (7, 6)),
             ]
         self.mangKaib = True
         self.saabVeel = False
@@ -126,31 +127,104 @@ class Kabe(object):
 
     def alusta(self):
 
+        print("Kas soovite mängida üksi või kahekesi?")
+        sis = self.valesti5()
+
+        if not sis:
+            self.uksik_mang()
+        elif sis:
+            self.kaksik_mang()
+        else:
+            print("Vale vastus!")
+
+    def uksik_mang(self):
+
         varvid = {"m": ["must", "musta"], "v": ["valge", "valge"]}
-        i = 0
+        i = randint(0, 1)
+        nupp = None
 
-        while self.mangKaib:
-            for nupp in self.laud:
-                self.muundaNupp(nupp)
+        try:
+            while self.mangKaib:
+                if not self.mang_kaib():
+                    break
 
-            if not self.mang_kaib():
-                break
+                for n in self.laud:
+                    self.muundaNupp(n)
 
-            if i == 0:
-                self.print()
+                if not i or self.saabVeel:
+                    self.print()
 
                 if self.saabVeel:
                     print("Kas soovite veel ühe hüppe teha?")
                     sis = input("Jah / Ei: ").strip(" ").lower()
-                    if sis == "jah":
+                    if sis == "jah" or sis == "j":
                         i += 1
+                        i %= 2
                         self.veel = True
+                    else:
+                        self.saabVeel = False
 
+                if i == 0:
+                    mangija_varv = list(varvid.keys())[i][0]
+
+                    if not self.veel:
+                        print(f"\n{varvid[mangija_varv][1].capitalize()} nupu kord.")
+
+                        x_algus, y_algus = self.valesti4(
+                            "Sisestage soovitud nupu koordinaadid", mangija_varv, varvid
+                        )
+                        if x_algus == None:
+                            break
+
+                        nupp = self.leiaNupp(x_algus - 1, y_algus - 1)
+
+                    x_lopp, y_lopp = self.valesti1("Sisestage uue koha koordinaadid")
+                    if x_lopp == None:
+                        break
+
+                    nupp = self.leiaNupp(nupp.asukoht[0], nupp.asukoht[1])
+                    nupp.liigu(x_lopp, y_lopp, self)
+
+                else:
+                    # print(f"\n{varvid[mangija_varv][1].capitalize()} nupu kord.")
+                    self = self.Minimax(0, True)[1]
+
+                i += 1
+                i %= 2
+
+        except AttributeError:
+            print("\n\nMÄNG LÄBI!")
+            input('\nLõpetamiseks vajutage "Enter"')
+
+    def kaksik_mang(self):
+
+        varvid = {"m": ["must", "musta"], "v": ["valge", "valge"]}
+        i = randint(0, 1)
+        nupp = None
+
+        try:
+            while self.mangKaib:
+                self.print()
+
+                if not self.mang_kaib():
+                    break
+
+                for n in self.laud:
+                    self.muundaNupp(n)
+
+                if self.saabVeel:
+                    print("Kas soovite veel ühe hüppe teha?")
+                    sis = input("Jah / Ei: ").strip(" ").lower()
+                    if sis == "jah" or sis == "j":
+                        i += 1
+                        i %= 2
+                        self.veel = True
                     else:
                         self.saabVeel = False
 
                 mangija_varv = list(varvid.keys())[i][0]
 
+                print(i)
                 if not self.veel:
                     print(f"\n{varvid[mangija_varv][1].capitalize()} nupu kord.")
 
@@ -166,17 +240,15 @@ class Kabe(object):
                 if x_lopp == None:
                     break
 
+                nupp = self.leiaNupp(nupp.asukoht[0], nupp.asukoht[1])
                 nupp.liigu(x_lopp, y_lopp, self)
 
-            else:
-                self = self.Minimax(1, True)[1]
+                i += 1
+                i %= 2
 
-            i += 1
-            i %= 2
-
-        self.print()
-        print("MÄNG LÄBI!")
-        input('Lõpetamiseks vajutage klaviatuuri')
+        except AttributeError:
+            print("\n\nMÄNG LÄBI!")
+            input('\nLõpetamiseks vajutage "Enter"')
 
     def valesti1(self, son):
         print(son)
@@ -186,47 +258,48 @@ class Kabe(object):
         except ValueError:
             print("Kas te soovite mängu lõpetada?")
             sis = input("Jah / Ei: ").strip(" ").lower()
-            if sis == "jah" or sis == "stopp" or sis == "stop":
+            if sis == "jah" or sis == "stopp" or sis == "stop" or sis == "j":
                 self.mangKaib = False
                 return None, None
             elif sis == "debug":
-                print(self)
+                print("\nself.getLaud()")
                 self.getLaud()
+                print(f"\nself:\n{self}\n")
                 return self.valesti1(son)
             else:
                 return self.valesti1(son)
         return x, y
 
-    def valesti2(self):
-        print("Sisestage oma nupu värv.")
-        vastus = input("M / V: ").strip(" ").lower()
-        if vastus == "m" or vastus == "must":
-            pass
-        elif vastus == "v" or vastus == "valge":
-            pass
-        else:
-            print("Sellist värvi pole. Kas soovite mängu lõpetada?")
-            sis = input("Jah / Ei: ").lower()
-            if sis == "jah" or sis == "stopp" or sis == "stop":
-                self.mangKaib = False
-                return None, None
-            else:
-                return self.valesti2()
-        return vastus
+    # def valesti2(self):
+    #     print("Sisestage oma nupu värv.")
+    #     vastus = input("M / V: ").strip(" ").lower()
+    #     if vastus == "m" or vastus == "must":
+    #         pass
+    #     elif vastus == "v" or vastus == "valge":
+    #         pass
+    #     else:
+    #         print("Sellist värvi pole. Kas soovite mängu lõpetada?")
+    #         sis = input("Jah / Ei: ").lower()
+    #         if sis == "jah" or sis == "stopp" or sis == "stop":
+    #             self.mangKaib = False
+    #             return None, None
+    #         else:
+    #             return self.valesti2()
+    #     return vastus
 
-    def valesti3(self, son):
-        print(son)
-        try:
-            x, y = tuple(map(int, input("rida verg: ").split()))
-            return x, y
-        except ValueError:
-            print("Kas te soovite mängu lõpetada?")
-            sis = input("Jah / Ei: ").strip(" ").lower()
-            if sis == "jah" or sis == "stopp" or sis == "stop":
-                self.mangKaib = False
-                return None, None
-            else:
-                return self.valesti3(son)
+    # def valesti3(self, son):
+    #     print(son)
+    #     try:
+    #         x, y = tuple(map(int, input("rida verg: ").split()))
+    #         return x, y
+    #     except ValueError:
+    #         print("Kas te soovite mängu lõpetada?")
+    #         sis = input("Jah / Ei: ").strip(" ").lower()
+    #         if sis == "jah" or sis == "stopp" or sis == "stop":
+    #             self.mangKaib = False
+    #             return None, None
+    #         else:
+    #             return self.valesti3(son)
 
     def valesti4(self, son, varv, varvid, x=None, y=None):
         x, y = self.valesti1(son)
@@ -248,14 +321,20 @@ class Kabe(object):
             else:
                 return x, y
 
+    def valesti5(self):
+        sis = int(input("1 / 2: ")) - 1
+        if sis == 0 or sis == 1:
+            return sis
+        return self.valesti5()
+
     def muundaNupp(self, nupp, aj=False):
-        if nupp.varv == "m" and nupp.asukoht[0] == 7 and isinstance(nupp, Mehike):
+        if nupp.varv == "v" and nupp.asukoht[0] == 7 and isinstance(nupp, Mehike):
             if aj:
                 uus_nupp = Kuningas()
                 uus_nupp.kopeeri(nupp)
                 return uus_nupp
             self.asenda(nupp)
-        elif nupp.varv == "v" and nupp.asukoht[0] == 0 and isinstance(nupp, Mehike):
+        elif nupp.varv == "m" and nupp.asukoht[0] == 0 and isinstance(nupp, Mehike):
             if aj:
                 uus_nupp = Kuningas()
                 uus_nupp.kopeeri(nupp)
@@ -296,7 +375,7 @@ class Kabe(object):
         n = self.loo_n()
         sammud = set()
 
-        if isinstance(nupp, Mehike) and nupp.varv == "v":
+        if isinstance(nupp, Mehike) and nupp.varv == "m":
             for i in range(-1, 2, 2):
                 if (x - 1, y + i) not in n and nupp.onLaual(x - 1, y + i):
                     sammud.add((x - 1, y + i))
@@ -312,7 +391,7 @@ class Kabe(object):
                     and n[(x - 1, y + i)] != nupp.varv
                 ):
                     sammud.add((x - 1, y + i))
-        elif isinstance(nupp, Mehike) and nupp.varv == "m":
+        elif isinstance(nupp, Mehike) and nupp.varv == "v":
             for i in range(-1, 2, 2):
                 if (x + 1, y + i) not in n and nupp.onLaual(x + 1, y + i):
                     sammud.add((x + 1, y + i))
