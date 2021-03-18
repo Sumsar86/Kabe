@@ -2,6 +2,7 @@ from copy import deepcopy
 from nupp import Mehike, Kuningas
 from random import randint
 
+
 class Kabe(object):
     def __init__(self, laud=None):
         if laud != None:
@@ -9,20 +10,20 @@ class Kabe(object):
         else:
             self.laud = [
                 Mehike(1, "v", (0, 1)),
-                # Mehike(2, "v", (0, 3)),
+                Mehike(2, "v", (0, 3)),
                 Mehike(3, "v", (0, 5)),
                 Mehike(4, "v", (0, 7)),
                 Mehike(5, "v", (1, 0)),
                 Mehike(6, "v", (1, 2)),
                 Mehike(7, "v", (1, 4)),
                 Mehike(8, "v", (1, 6)),
-                Mehike(9, "v", (2+1, 1+1)),
+                Mehike(9, "v", (2, 1)),
                 Mehike(10, "v", (2, 3)),
-                # Mehike(11, "v", (2, 5)),
+                Mehike(11, "v", (2, 5)),
                 Mehike(12, "v", (2, 7)),
                 Mehike(1, "m", (5, 0)),
                 Mehike(2, "m", (5, 2)),
-                Mehike(3, "m", (5-1, 4-1)),
+                Mehike(3, "m", (5, 4)),
                 Mehike(4, "m", (5, 6)),
                 Mehike(5, "m", (6, 1)),
                 Mehike(6, "m", (6, 3)),
@@ -126,9 +127,20 @@ class Kabe(object):
 
     def alusta(self):
 
+        print("Kas soovite mängida üksi või kahekesi?")
+        sis = self.valesti5()
+
+        if not sis:
+            self.uksik_mang()
+        elif sis:
+            self.kaksik_mang()
+        else:
+            print("Vale vastus!")
+
+    def uksik_mang(self):
+
         varvid = {"m": ["must", "musta"], "v": ["valge", "valge"]}
         i = randint(0, 1)
-
         nupp = None
 
         try:
@@ -169,7 +181,7 @@ class Kabe(object):
                     x_lopp, y_lopp = self.valesti1("Sisestage uue koha koordinaadid")
                     if x_lopp == None:
                         break
-                    
+
                     nupp = self.leiaNupp(nupp.asukoht[0], nupp.asukoht[1])
                     nupp.liigu(x_lopp, y_lopp, self)
 
@@ -181,9 +193,62 @@ class Kabe(object):
                 i %= 2
 
         except AttributeError:
-            pass
-        print("\n\nMÄNG LÄBI!")
-        input('\nLõpetamiseks vajutage "Enter"')
+            print("\n\nMÄNG LÄBI!")
+            input('\nLõpetamiseks vajutage "Enter"')
+
+    def kaksik_mang(self):
+
+        varvid = {"m": ["must", "musta"], "v": ["valge", "valge"]}
+        i = randint(0, 1)
+        nupp = None
+
+        try:
+            while self.mangKaib:
+                self.print()
+
+                if not self.mang_kaib():
+                    break
+
+                for n in self.laud:
+                    self.muundaNupp(n)
+
+                if self.saabVeel:
+                    print("Kas soovite veel ühe hüppe teha?")
+                    sis = input("Jah / Ei: ").strip(" ").lower()
+                    if sis == "jah" or sis == "j":
+                        i += 1
+                        i %= 2
+                        self.veel = True
+                    else:
+                        self.saabVeel = False
+
+                mangija_varv = list(varvid.keys())[i][0]
+
+                print(i)
+                if not self.veel:
+                    print(f"\n{varvid[mangija_varv][1].capitalize()} nupu kord.")
+
+                    x_algus, y_algus = self.valesti4(
+                        "Sisestage soovitud nupu koordinaadid", mangija_varv, varvid
+                    )
+                    if x_algus == None:
+                        break
+
+                    nupp = self.leiaNupp(x_algus - 1, y_algus - 1)
+
+                x_lopp, y_lopp = self.valesti1("Sisestage uue koha koordinaadid")
+                if x_lopp == None:
+                    break
+
+                nupp = self.leiaNupp(nupp.asukoht[0], nupp.asukoht[1])
+                nupp.liigu(x_lopp, y_lopp, self)
+
+                i += 1
+                i %= 2
+
+        except AttributeError:
+            print("\n\nMÄNG LÄBI!")
+            input('\nLõpetamiseks vajutage "Enter"')
 
     def valesti1(self, son):
         print(son)
@@ -197,44 +262,44 @@ class Kabe(object):
                 self.mangKaib = False
                 return None, None
             elif sis == "debug":
-                print('\nself.getLaud()')
+                print("\nself.getLaud()")
                 self.getLaud()
-                print(f'\nself:\n{self}\n')
+                print(f"\nself:\n{self}\n")
                 return self.valesti1(son)
             else:
                 return self.valesti1(son)
         return x, y
 
-    def valesti2(self):
-        print("Sisestage oma nupu värv.")
-        vastus = input("M / V: ").strip(" ").lower()
-        if vastus == "m" or vastus == "must":
-            pass
-        elif vastus == "v" or vastus == "valge":
-            pass
-        else:
-            print("Sellist värvi pole. Kas soovite mängu lõpetada?")
-            sis = input("Jah / Ei: ").lower()
-            if sis == "jah" or sis == "stopp" or sis == "stop":
-                self.mangKaib = False
-                return None, None
-            else:
-                return self.valesti2()
-        return vastus
+    # def valesti2(self):
+    #     print("Sisestage oma nupu värv.")
+    #     vastus = input("M / V: ").strip(" ").lower()
+    #     if vastus == "m" or vastus == "must":
+    #         pass
+    #     elif vastus == "v" or vastus == "valge":
+    #         pass
+    #     else:
+    #         print("Sellist värvi pole. Kas soovite mängu lõpetada?")
+    #         sis = input("Jah / Ei: ").lower()
+    #         if sis == "jah" or sis == "stopp" or sis == "stop":
+    #             self.mangKaib = False
+    #             return None, None
+    #         else:
+    #             return self.valesti2()
+    #     return vastus
 
-    def valesti3(self, son):
-        print(son)
-        try:
-            x, y = tuple(map(int, input("rida verg: ").split()))
-            return x, y
-        except ValueError:
-            print("Kas te soovite mängu lõpetada?")
-            sis = input("Jah / Ei: ").strip(" ").lower()
-            if sis == "jah" or sis == "stopp" or sis == "stop":
-                self.mangKaib = False
-                return None, None
-            else:
-                return self.valesti3(son)
+    # def valesti3(self, son):
+    #     print(son)
+    #     try:
+    #         x, y = tuple(map(int, input("rida verg: ").split()))
+    #         return x, y
+    #     except ValueError:
+    #         print("Kas te soovite mängu lõpetada?")
+    #         sis = input("Jah / Ei: ").strip(" ").lower()
+    #         if sis == "jah" or sis == "stopp" or sis == "stop":
+    #             self.mangKaib = False
+    #             return None, None
+    #         else:
+    #             return self.valesti3(son)
 
     def valesti4(self, son, varv, varvid, x=None, y=None):
         x, y = self.valesti1(son)
@@ -255,6 +320,12 @@ class Kabe(object):
                 )
             else:
                 return x, y
+
+    def valesti5(self):
+        sis = int(input("1 / 2: ")) - 1
+        if sis == 0 or sis == 1:
+            return sis
+        return self.valesti5()
 
     def muundaNupp(self, nupp, aj=False):
         if nupp.varv == "v" and nupp.asukoht[0] == 7 and isinstance(nupp, Mehike):
